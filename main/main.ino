@@ -1,48 +1,51 @@
+//
+// https://github.com/icrnjavic/ArduDAQ
+// Arduino shield for data aquisiton of voltage, current and temperature measurements with available IO from teh ebase board.
+//
+
+
+
 #include <Wire.h>
 #include <Adafruit_ADS1X15.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-// Create an ADS1115 object
 Adafruit_ADS1115 ads;
 
-// Resistor values for voltage dividers
-float R1 = 10000.0;  // Upper resistor value in ohms
-float R2 = 1000.0;   // Lower resistor value in ohms
+// voltage divider resistor values.
+// with 0.1% resistors its fine this way but when using resistors above 1% it would be better using measured resistor values for each channel to achive best accuracy
+float R1 = 10000.0;
+float R2 = 1000.0;
 
-// DS18B20 Temperature Sensor Setup
-#define ONE_WIRE_BUS 2  // DS18B20 data pin connected to D2
+// ds18b20 Temperature Sensor Setup
+#define ONE_WIRE_BUS 2  // DS18B20 to pin D2
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-// ACS712-5A constants
-float ACS712_Offset = 2.5;  // Voltage at 0A (approximately 2.5V for 5V supply)
-float ACS712_Sensitivity = 0.185;  // Sensitivity in V/A (for 5A version)
-float currentDeadband = 0.05;  // Small deadband to filter out noise
+// acs712-5A setup
+float ACS712_Offset = 2.5;  
+float ACS712_Sensitivity = 0.185;  // sensitivity for 5A version
+float currentDeadband = 0.05;  // deadband noise filter
 
 void setup() {
   Serial.begin(115200);
-  
-  // Initialize ADS1115
+  // initialize modules
   if (!ads.begin()) {
     Serial.println("Failed to initialize ADS1115!");
     while (1);
   }
   Serial.println("ADS1115 initialized.");
-  
-  // Initialize DS18B20
   sensors.begin();
   Serial.println("DS18B20 initialized.");
 
-  // Calibrate ACS712 offset
+  // calibrate acs712 offset
   calibrateACS712Offset();
 }
 
 void loop() {
-  // Check if data is available on the serial port
+  // read commands via serial and return the measurement
   if (Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n');  // Read the incoming command
-
+    String command = Serial.readStringUntil('\n');
     if (command == "READ_CHANNEL_0") {
       Serial.print("Channel 0 Voltage: ");
       Serial.println(readChannelVoltage(0));
@@ -59,7 +62,7 @@ void loop() {
       Serial.print("Averaged Current (ACS712): ");
       float averagedCurrent = readCurrentAverage();
       
-      // Apply deadband to ignore small readings
+      // deadband filter (WIP)
       if (abs(averagedCurrent) < currentDeadband) {
         averagedCurrent = 0.0;
       }
@@ -72,10 +75,10 @@ void loop() {
     } 
   }
 
-  delay(10);  // Short delay to allow for serial processing
+  delay(10);  // serial processing
 }
 
-// Function to read voltage from a specific ADS1115 channel
+// ADS1115 measurement of individual channels
 float readChannelVoltage(int channel) {
   int16_t adcReading;
   float Vout, inputVoltage;
@@ -95,43 +98,43 @@ float readChannelVoltage(int channel) {
   return inputVoltage;
 }
 
-// Function to take 20 burst measurements and average them for ACS712
+// acs712 - sample current draw and return the average
 float readCurrentAverage() {
-  const int numMeasurements = 20;  // Number of measurements to take
+  const int numMeasurements = 20;  // number of samples
   float totalCurrent = 0;
 
   for (int i = 0; i < numMeasurements; i++) {
     totalCurrent += readCurrent();
-    delay(5);  // Small delay between measurements
+    delay(5);
   }
 
-  return totalCurrent / numMeasurements;  // Return the average current
+  return totalCurrent / numMeasurements;
 }
 
-// Function to read current from ACS712 connected to A3 (using Arduino's built-in ADC)
+// read current from acs712 via A3 pin
 float readCurrent() {
-  int16_t currentAdcReading = analogRead(A3);  // Use Arduino's built-in ADC on A3
-  float currentVout = (currentAdcReading * 5.0) / 1023.0;  // Convert ADC value to voltage (5V reference for Arduino)
+  int16_t currentAdcReading = analogRead(A3); 
+  float currentVout = (currentAdcReading * 5.0) / 1023.0;  // TO DO: for V2 use ads1115 instead of internal adc for better resolution
   return (currentVout - ACS712_Offset) / ACS712_Sensitivity;
 }
 
-// Function to calibrate the ACS712 offset voltage
+
 void calibrateACS712Offset() {
-  // Measure the average voltage when no current is flowing
+  // measure average voltage with no current draw
   float total = 0;
-  const int numReadings = 100;  // Take multiple readings for stability
+  const int numReadings = 100;  // number of samples
 
   for (int i = 0; i < numReadings; i++) {
     total += (analogRead(A3) * 5.0) / 1023.0;
-    delay(5);  // Small delay between readings
+    delay(5);
   }
 
-  ACS712_Offset = total / numReadings;  // Average voltage as the new offset
+  ACS712_Offset = total / numReadings;  // calculate new offset
   Serial.print("Calibrated ACS712 Offset: ");
   Serial.println(ACS712_Offset);
 }
 
-// Function to read temperature from DS18B20
+// temperature reding
 float readTemperature() {
   sensors.requestTemperatures();
   return sensors.getTempCByIndex(0);
