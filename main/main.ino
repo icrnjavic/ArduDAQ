@@ -38,6 +38,15 @@ void setup() {
   sensors.begin();
   Serial.println("DS18B20 initialized.");
 
+  // set shield pins as outputs
+  pinMode(0, OUTPUT);
+  pinMode(1, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+
   // calibrate acs712 offset
   calibrateACS712Offset();
 }
@@ -72,13 +81,25 @@ void loop() {
       Serial.print("Temperature (DS18B20): ");
       Serial.print(readTemperature());
       Serial.println(" °C");
+    } else if (command.startsWith("SET_PIN_")) {
+      int pin = command.substring(8, 10).toInt();
+      int state = command.substring(11).toInt();
+      if (isValidPin(pin)) {
+        digitalWrite(pin, state);
+        Serial.print("Pin D");
+        Serial.print(pin);
+        Serial.print(" set to ");
+        Serial.println(state ? "HIGH" : "LOW");
+      } else {
+        Serial.println("Invalid pin");
+      }
     } 
   }
 
   delay(10);  // serial processing
 }
 
-// ADS1115 measurement of individual channels
+// ads1115 measurement of individual channels
 float readChannelVoltage(int channel) {
   int16_t adcReading;
   float Vout, inputVoltage;
@@ -138,4 +159,9 @@ void calibrateACS712Offset() {
 float readTemperature() {
   sensors.requestTemperatures();
   return sensors.getTempCByIndex(0);
+}
+
+// check if the pin is one of the valid shield pins
+bool isValidPin(int pin) {
+  return (pin == 0 || pin == 1 || (pin >= 3 && pin <= 7));
 }
