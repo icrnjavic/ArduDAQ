@@ -17,9 +17,9 @@ It's a fun side project with cost-effectivenes and customizability in mind for a
 
 | Function         | Status          | Comments            |
 |--------------------|-----------------|---------------------|
-| Voltage Channels   | ✅ Tested        | Initial test looks good. |
-| Current Channel    | ✅ Tested        | After some tweaks readings look good but not too acurate under the 40mA range. |
-| Onboard Temperature| 🚧 In Progress  |   |
+| Voltage Channels   | ✅ Tested        | Initial test seems good. |
+| Current Channel    | ✅ Tested        | After some tweaks readings look good but not too acurate under the 30mA range. |
+| Onboard Temperature| ✅ Tested  | Initital test seems good.  |
 | IO | ❌ Not Tested  |  Not yet supported in the SW. |
 
 Above tests were just the basic tests on the bench.
