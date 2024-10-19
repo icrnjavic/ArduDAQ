@@ -27,6 +27,10 @@ float ACS712_Offset = 2.5;
 float ACS712_Sensitivity = 0.185;  // sensitivity for 5A version
 float currentDeadband = 0.05;  // deadband noise filter
 
+bool continuousMode = false;
+unsigned long lastMeasurementTime = 0;
+const unsigned long measurementInterval = 10; // interval
+
 void setup() {
   Serial.begin(115200);
   // initialize modules
@@ -52,51 +56,76 @@ void setup() {
 }
 
 void loop() {
-  // read commands via serial and return the measurement
   if (Serial.available() > 0) {
     String command = Serial.readStringUntil('\n');
-    if (command == "READ_CHANNEL_0") {
-      Serial.print("Channel 0 Voltage: ");
-      Serial.println(readChannelVoltage(0));
-    } else if (command == "READ_CHANNEL_1") {
-      Serial.print("Channel 1 Voltage: ");
-      Serial.println(readChannelVoltage(1));
-    } else if (command == "READ_CHANNEL_2") {
-      Serial.print("Channel 2 Voltage: ");
-      Serial.println(readChannelVoltage(2));
-    } else if (command == "READ_CHANNEL_3") {
-      Serial.print("Channel 3 Voltage: ");
-      Serial.println(readChannelVoltage(3));
-    } else if (command == "READ_CURRENT") {
-      Serial.print("Averaged Current (ACS712): ");
-      float averagedCurrent = readCurrentAverage();
-      
-      // deadband filter (WIP)
-      if (abs(averagedCurrent) < currentDeadband) {
-        averagedCurrent = 0.0;
-      }
-      Serial.print(averagedCurrent);
-      Serial.println(" A");
-    } else if (command == "READ_TEMPERATURE") {
-      Serial.print("Temperature (DS18B20): ");
-      Serial.print(readTemperature());
-      Serial.println(" °C");
-    } else if (command.startsWith("SET_PIN_")) {
-      int pin = command.substring(8, 10).toInt();
-      int state = command.substring(11).toInt();
-      if (isValidPin(pin)) {
-        digitalWrite(pin, state);
-        Serial.print("Pin D");
-        Serial.print(pin);
-        Serial.print(" set to ");
-        Serial.println(state ? "HIGH" : "LOW");
-      } else {
-        Serial.println("Invalid pin");
-      }
-    } 
+    processCommand(command);
   }
 
-  delay(10);  // serial processing
+  if (continuousMode && (millis() - lastMeasurementTime >= measurementInterval)) {
+    sendContinuousMeasurements();
+    lastMeasurementTime = millis();
+  }
+
+  // Remove the delay to improve responsiveness
+}
+
+void processCommand(String command) {
+  if (command == "START_CONTINUOUS") {
+    continuousMode = true;
+    Serial.println("Continuous mode started");
+  } else if (command == "STOP_CONTINUOUS") {
+    continuousMode = false;
+    Serial.println("Continuous mode stopped");
+  } else if (command == "READ_CHANNEL_1") {
+    Serial.print("Channel 0 Voltage: ");
+    Serial.println(readChannelVoltage(0));
+  } else if (command == "READ_CHANNEL_2") {
+    Serial.print("Channel 1 Voltage: ");
+    Serial.println(readChannelVoltage(1));
+  } else if (command == "READ_CHANNEL_3") {
+    Serial.print("Channel 2 Voltage: ");
+    Serial.println(readChannelVoltage(2));
+  } else if (command == "READ_CHANNEL_4") {
+    Serial.print("Channel 3 Voltage: ");
+    Serial.println(readChannelVoltage(3));
+  } else if (command == "READ_CURRENT") {
+    Serial.print("Averaged Current (ACS712): ");
+    float averagedCurrent = readCurrentAverage();
+    
+    // deadband filter (WIP)
+    if (abs(averagedCurrent) < currentDeadband) {
+      averagedCurrent = 0.0;
+    }
+    Serial.print(averagedCurrent);
+    Serial.println(" A");
+  } else if (command == "READ_TEMPERATURE") {
+    Serial.print("Temperature (DS18B20): ");
+    Serial.print(readTemperature());
+    Serial.println(" °C");
+  } else if (command.startsWith("SET_PIN_")) {
+    int pin = command.substring(8, 10).toInt();
+    int state = command.substring(11).toInt();
+    if (isValidPin(pin)) {
+      digitalWrite(pin, state);
+      Serial.print("Pin D");
+      Serial.print(pin);
+      Serial.print(" set to ");
+      Serial.println(state ? "HIGH" : "LOW");
+    } else {
+      Serial.println("Invalid pin");
+    }
+  } 
+}
+
+void sendContinuousMeasurements() {
+  for (int i = 0; i < 4; i++) {
+    Serial.print("CH_");
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.print(readChannelVoltage(i));
+    Serial.print("V, ");
+  }
+  Serial.println();
 }
 
 // ads1115 measurement of individual channels

@@ -39,10 +39,10 @@ More detailed testing will be done after I finish the test jig.
 ### Supported commands
 | Command | Description | Response Format |
 |---------|-------------|-----------------|
-| `READ_CHANNEL_0` | Read Voltage Channel 1 | `<value>` in V |
-| `READ_CHANNEL_1` | Read Voltage Channel 2 | `<value>` in V |
-| `READ_CHANNEL_2` | Read Voltage Channel 3 | `<value>` in V |
-| `READ_CHANNEL_3` | Read Voltage Channel 4 | `<value>` in V |
+| `READ_CHANNEL_1` | Read Voltage Channel 1 | `<value>` in V |
+| `READ_CHANNEL_2` | Read Voltage Channel 2 | `<value>` in V |
+| `READ_CHANNEL_3` | Read Voltage Channel 3 | `<value>` in V |
+| `READ_CHANNEL_4` | Read Voltage Channel 4 | `<value>` in V |
 | `READ_CURRENT` | Read current draw | `<value>` in A |
 | `READ_TEMPERATURE` | Read Onboard Temperature | `<value>` in °C|
 
@@ -50,8 +50,5 @@ More detailed testing will be done after I finish the test jig.
 
 To read the voltage on Channel 1, send the command `READ_CHANNEL_0` over serial. Board will respond with a message like: `3.30V`
 
-## License
-
-MIT License
 
 
