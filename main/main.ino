@@ -38,9 +38,9 @@ void setup() {
     Serial.println("Failed to initialize ADS1115!");
     while (1);
   }
-  Serial.println("ADS1115 initialized.");
+  //Serial.println("ADS1115 initialized.");
   sensors.begin();
-  Serial.println("DS18B20 initialized.");
+  //Serial.println("DS18B20 initialized.");
 
   // set shield pins as outputs
   pinMode(0, OUTPUT);
@@ -180,8 +180,8 @@ void calibrateACS712Offset() {
   }
 
   ACS712_Offset = total / numReadings;  // calculate new offset
-  Serial.print("Calibrated ACS712 Offset: ");
-  Serial.println(ACS712_Offset);
+  //Serial.print("Calibrated ACS712 Offset: ");
+  //Serial.println(ACS712_Offset);
 }
 
 // temperature reding
