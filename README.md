@@ -2,7 +2,7 @@
 
 ## Project Description
 
-ArduDAQ is an open-source data acquisition shield for the popular Arduino platform with design to measure voltage, current, and onboard temperature with access to the rest of the  using Arduino hardware. <br>
+ArduDAQ is an open-source data acquisition shield for the popular Arduino platform with design to measure voltage, current, and onboard temperature with access to the rest of the pins from the base board. <br>
 It's a fun side project with cost-effectivenes and customizability in mind for automating basic measurements.
 
 ## Features
@@ -20,7 +20,7 @@ It's a fun side project with cost-effectivenes and customizability in mind for a
 | Voltage Channels   | ✅ Tested        | Initial test seems good. |
 | Current Channel    | ✅ Tested        | After some tweaks readings look good but not too acurate under the 30mA range. |
 | Onboard Temperature| ✅ Tested  | Initital test seems good.  |
-| IO | ❌ Not Tested  |  Not yet supported in the SW. |
+| IO | ❌ Not Tested  |  SW support in WIP stake |
 
 Above tests were just the basic tests on the bench.
 More detailed testing will be done after I finish the test jig.
