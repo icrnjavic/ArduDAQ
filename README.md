@@ -1,5 +1,7 @@
 # ArduDAQ
 
+![Alt text](docs/pictures/1.png)
+
 ## Project Description
 
 ArduDAQ is an open-source data acquisition shield for the popular Arduino platform with design to measure voltage, current, and onboard temperature with access to the rest of the pins from the base board. <br>
@@ -18,13 +20,16 @@ It's a fun side project with cost-effectivenes and customizability in mind for a
 | Function         | Status          | Comments            |
 |--------------------|-----------------|---------------------|
 | Voltage Channels   | ✅ Tested        | Initial test seems good. |
-| Current Channel    | ✅ Tested        | After some tweaks readings look good but not too acurate under the 30mA range. |
+| Current Channel    | ✅ Tested        | Works relatively well but accuracy for super low currents not the best due to use of internal adc which is only 10bit.|
 | Onboard Temperature| ✅ Tested  | Initital test seems good.  |
 | IO | ❌ Not Tested  |  SW support in WIP stake |
 
 Above tests were just the basic tests on the bench.
-More detailed testing will be done after I finish the test jig.
+More detailed testing will be done after the test jig is finished.
 
+Too test the Voltage channel accuracy i teste accuracy so that I measured voltage on the PSU where i was incrementing the ouptu by 0.5V. For a reference point i was also measuring the output with a OWON XD1041 multimeter.
+![Alt text](docs/pictures/accuracy_test.png)
+As seen above on the cannel i was testing the accuracy was pretty good, with a max deviation of 8mV @ 50V compared to the multimeter.
 
 
 ## Getting Started
