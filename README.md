@@ -23,6 +23,7 @@ It's a fun side project to get more familiar and pratice HW and SW before starti
 | Current Channel    | ✅ Tested        | Works relatively well but accuracy for super low currents not the best due to use of internal adc which is only 10bit.|
 | Onboard Temperature| ✅ Tested  | Initital test seems good.  |
 | IO | ❌ Not Tested  |  SW support in WIP stake |
+| Desktop APP | 🚧  WIP  |  |
 
 Above tests were just the basic tests on the bench.
 More detailed testing will be done after the test jig is finished.
@@ -34,7 +35,7 @@ As seen above on the cannel i was testing the accuracy was pretty good, with a m
 
 ## Dekstop App
 Alongside ArduDAQ shield's support for serial commands for automated measurements it also has a desktop app(***still WIP***).<br>
-It will be able to put the ArduDAQ in continuous mode to display measured voltage on selected voltage channels over time and plot those measurements.
+It will be able to put the ArduDAQ in continuous mode to display measured voltages on selected voltage channels over time and plot those measurements.
 ![Alt text](docs/pictures/desktop_app.png)
 
 
