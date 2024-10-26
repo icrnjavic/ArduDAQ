@@ -12,10 +12,9 @@
 
 Adafruit_ADS1115 ads;
 
-// voltage divider resistor values.
-// with 0.1% resistors its fine this way but when using resistors above 1% it would be better using measured resistor values for each channel to achive best accuracy
-float R1 = 10000.0;
-float R2 = 1000.0;
+//array of voltage resistor values for individual channels 1-4 from left to right
+float R1[4] = {10000.0, 10000.0, 10000.0, 10000.0};
+float R2[4] = {1000.0, 1000.0, 1000.0, 1000.0};
 
 // ds18b20 Temperature Sensor Setup
 #define ONE_WIRE_BUS 2  // DS18B20 to pin D2
@@ -65,8 +64,6 @@ void loop() {
     sendContinuousMeasurements();
     lastMeasurementTime = millis();
   }
-
-  // Remove the delay to improve responsiveness
 }
 
 void processCommand(String command) {
@@ -136,13 +133,13 @@ float readChannelVoltage(int channel) {
   ads.setGain(GAIN_TWOTHIRDS);
   adcReading = ads.readADC_SingleEnded(channel);
   Vout = (adcReading * 6.144) / 32767.0;
-  inputVoltage = Vout * ((R1 + R2) / R2);
+  inputVoltage = Vout * ((R1[channel] + R2[channel]) / R2[channel]);
 
   if (inputVoltage < 4.0) {
     ads.setGain(GAIN_ONE);
     adcReading = ads.readADC_SingleEnded(channel);
     Vout = (adcReading * 4.096) / 32767.0;
-    inputVoltage = Vout * ((R1 + R2) / R2);
+    inputVoltage = Vout * ((R1[channel] + R2[channel]) / R2[channel]);
   }
 
   return inputVoltage;
