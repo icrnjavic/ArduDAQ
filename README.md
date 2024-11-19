@@ -71,7 +71,7 @@ It will be able to put the ArduDAQ in continuous mode to display measured voltag
 
 ### Example Usage
 
-To read the voltage on Channel 1, send the command `READ_CHANNEL_0` over serial. Board will respond with a message like: `3.30V`
+To read the voltage on Channel 1, send the command `READ_CHANNEL_1` over serial. Board will respond with a message like: `3.30V`
 
 
 
