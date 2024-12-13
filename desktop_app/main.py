@@ -65,6 +65,9 @@ class ArduDAQ_UI:
         # refresh ports button
         self.refresh_button = ttk.Button(master, text="Refresh Ports", command=self.update_ports)
         self.refresh_button.pack(pady=5)
+        
+        self.plot_update_interval = 0.1  # Update plot every 100 ms
+        self.master.after(int(self.plot_update_interval * 1000), self.update_plot)
     
     def update_ports(self):
         # update available ports
@@ -126,8 +129,6 @@ class ArduDAQ_UI:
         if display_data:
             self.data_text.insert(tk.END, " | ".join(display_data) + "\n")
             self.data_text.see(tk.END)
-        
-        self.update_plot()
     
     def update_plot(self):
         for i, line in enumerate(self.lines):
@@ -142,6 +143,8 @@ class ArduDAQ_UI:
         self.ax.relim()
         self.ax.autoscale_view()
         self.canvas.draw()
+        
+        self.master.after(int(self.plot_update_interval * 1000), self.update_plot)
 
     def on_closing(self):
         self.running = False

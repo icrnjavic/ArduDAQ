@@ -150,14 +150,16 @@ void processCommand(String command) {
 }
 
 void sendContinuousMeasurements() {
+  String response = "";
   for (int i = 0; i < 4; i++) {
-    Serial.print("CH_");
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.print(readChannelVoltage(i));
-    Serial.print("V, ");
+    response += "CH_";
+    response += String(i);
+    response += ": ";
+    response += String(readChannelVoltage(i));
+    response += "V, ";
   }
-  Serial.println();
+  response.trim();
+  Serial.println(response);
 }
 
 // ads1115 measurement of individual channels
