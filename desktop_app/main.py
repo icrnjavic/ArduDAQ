@@ -134,7 +134,7 @@ class ArduDAQ_UI:
             pg.setConfigOptions(antialias=True)
             self.plot_widget = pg.PlotWidget()
             self.plot_widget.setBackground('w')
-            self.plot_widget.setTitle('Voltage vs Time')
+            self.plot_widget.setTitle('Measurement / Time')
             self.plot_widget.setLabel('left', 'Voltage (V)')
             self.plot_widget.setLabel('bottom', 'Time (s)')
             self.plot_widget.setWindowTitle('Voltage Plot')

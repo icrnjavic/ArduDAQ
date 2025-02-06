@@ -80,15 +80,19 @@ void loop() {
 }
 
 void processCommand(String command) {
-  if (command.startsWith("SET_")) {
-    int pin = command.charAt(4) - '0'; // extract the pin number    
+  if (command.startsWith("OUTP")) {
+    String pinStr = command.substring(9, 11); // Extract from index 9 to 11
+    int pin = pinStr.toInt(); // Convert to integer
+    Serial.println(command);
+    Serial.println(pin);
+
     if (isValidPin(pin)) {
-      if (command.endsWith("_ON")) {
+      if (command.endsWith("ON")) {
         digitalWrite(pin, HIGH); // set extracted pin to HIGH
         Serial.print("Pin D");
         Serial.print(pin);
         Serial.println(" set to HIGH");
-      } else if (command.endsWith("_OFF")) {
+      } else if (command.endsWith("OFF")) {
         digitalWrite(pin, LOW); // set the extracted pin to LOW
         Serial.print("Pin D");
         Serial.print(pin);
