@@ -49,29 +49,31 @@ It will be able to put the ArduDAQ in continuous mode to display measured voltag
 - **Flow Control**: None
 
 ### Supported commands
-| Command | Description | Response Format |
-|---------|-------------|-----------------|
-| `info` | Displays available commands via serial | `<info>` |
-| `READ_CHANNEL_1` | Read Voltage Channel 1 | `<value>` in V |
-| `READ_CHANNEL_2` | Read Voltage Channel 2 | `<value>` in V |
-| `READ_CHANNEL_3` | Read Voltage Channel 3 | `<value>` in V |
-| `READ_CHANNEL_4` | Read Voltage Channel 4 | `<value>` in V |
-| `READ_CURRENT` | Read current draw | `<value>` in A |
-| `READ_TEMPERATURE` | Read Onboard Temperature | `<value>` in °C|
-| `SET_3_ON` | Sets shield D3 pin HIGH | Pin D3 set to HIGH |
-| `SET_3_OFF` | Sets shield D3 pin LOW | Pin D3 set to LOW |
-| `SET_4_ON` | Sets shield D4 pin HIGH | Pin D4 set to HIGH |
-| `SET_4_OFF` | Sets shield D4 pin LOW | Pin D4 set to LOW |
-| `SET_5_ON` | Sets shield D5 pin HIGH | Pin D5 set to HIGH |
-| `SET_5_OFF` | Sets shield D5 pin LOW | Pin D5 set to LOW |
-| `SET_6_ON` | Sets shield D6 pin HIGH | Pin D6 set to HIGH |
-| `SET_6_OFF` | Sets shield D6 pin LOW | Pin D6 set to LOW |
-| `SET_7_ON` | Sets shield D7 pin HIGH | Pin D7 set to HIGH |
-| `SET_7_OFF` | Sets shield D7 pin LOW | Pin D7 set to LOW |
+| Command           | Description                           | Response Format    |
+|-------------------|---------------------------------------|--------------------|
+| `*IDN?`          | Request device identification         | Device identifier  |
+| `MEAS:VOLT:CHAN1?`| Read voltage from channel 1          | `<value>` in V     |
+| `MEAS:VOLT:CHAN2?`| Read voltage from channel 2          | `<value>` in V     |
+| `MEAS:VOLT:CHAN3?`| Read voltage from channel 3          | `<value>` in V     |
+| `MEAS:VOLT:CHAN4?`| Read voltage from channel 4          | `<value>` in V     |
+| `MEAS:CURR?`      | Read current measurement             | `<value>` in A     |
+| `MEAS:TEMP?`      | Read temperature measurement         | `<value>` in °C|
+| `OUTP:CHAN3 ON`   | Turn on channel 3 output             | Channel 3 ON       |
+| `OUTP:CHAN3 OFF`  | Turn off channel 3 output            | Channel 3 OFF      |
+| `OUTP:CHAN4 ON`   | Turn on channel 4 output             | Channel 4 ON       |
+| `OUTP:CHAN4 OFF`  | Turn off channel 4 output            | Channel 4 OFF      |
+| `OUTP:CHAN5 ON`   | Turn on channel 5 output             | Channel 5 ON       |
+| `OUTP:CHAN5 OFF`  | Turn off channel 5 output            | Channel 5 OFF      |
+| `OUTP:CHAN6 ON`   | Turn on channel 6 output             | Channel 6 ON       |
+| `OUTP:CHAN6 OFF`  | Turn off channel 6 output            | Channel 6 OFF      |
+| `OUTP:CHAN7 ON`   | Turn on channel 7 output             | Channel 7 ON       |
+| `OUTP:CHAN7 OFF`  | Turn off channel 7 output            | Channel 7 OFF      |
+
+
 
 ### Example Usage
 
-To read the voltage on Channel 1, send the command `READ_CHANNEL_0` over serial. Board will respond with a message like: `3.30V`
+To read the voltage on Channel 1, send the command `MEAS:VOLT:CHAN1?` over serial. Board will respond with a message like: `3.30V`
 
 
 

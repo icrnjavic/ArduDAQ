@@ -113,20 +113,20 @@ void processCommand(String command) {
   } else if (command.equals("STOP_CONTINUOUS")) {
     continuousMode = false;
     Serial.println("Continuous mode stopped");
-  } else if (command.equals("READ_CHANNEL_1")) {
+  } else if (command.equals("MEAS:VOLT:CHAN1?")) {
     Serial.print("Channel 0 Voltage: ");
     Serial.println(readChannelVoltage(0));
-  } else if (command.equals("READ_CHANNEL_2")) {
+  } else if (command.equals("MEAS:VOLT:CHAN2?")) {
     Serial.print("Channel 1 Voltage: ");
     Serial.println(readChannelVoltage(1));
-  } else if (command.equals("READ_CHANNEL_3")) {
+  } else if (command.equals("MEAS:VOLT:CHAN3?")) {
     Serial.print("Channel 2 Voltage: ");
     Serial.println(readChannelVoltage(2));
-  } else if (command.equals("READ_CHANNEL_4")) {
+  } else if (command.equals("MEAS:VOLT:CHAN4?")) {
     Serial.print("Channel 3 Voltage: ");
     Serial.println(readChannelVoltage(3));
-  } else if (command.equals("READ_CURRENT")) {
-    Serial.print("Averaged Current (ACS712): ");
+  } else if (command.equals("MEAS:CURR?")) {
+    //Serial.print("Averaged Current (ACS712): ");
     float averagedCurrent = readCurrentAverage();
     Serial.println(averagedCurrent);
   } else if (command.startsWith("READ_CHANNEL_")) {
@@ -141,7 +141,7 @@ void processCommand(String command) {
     } else {
       Serial.println("Invalid channel");
     }
-  } else if (command.equals("READ_TEMPERATURE")) {
+  } else if (command.equals("MEAS:TEMP?")) {
     float temperature = readTemperature();
     Serial.print("Temperature: ");
     Serial.print(temperature);
