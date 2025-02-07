@@ -17,8 +17,6 @@ class ArduDAQ_UI:
         self.master = master
         self.master.title("ArduDAQ desktop V0.1")
         self.ser = None
-        
-        # Initialize plot-related variables but don't create window yet
         self.plot_widget = None
         self.plot_data = [np.array([]) for _ in range(4)]
         self.lines = []
@@ -27,13 +25,11 @@ class ArduDAQ_UI:
         port_frame.pack(pady=5, fill=tk.X)
         
         self.port_label = ttk.Label(port_frame, text="Select Port:")
-        self.port_label.pack(side=tk.LEFT, padx=(0, 5))
-        
+        self.port_label.pack(side=tk.LEFT, padx=(0, 5))        
         self.port_var = tk.StringVar()
         self.port_dropdown = ttk.Combobox(port_frame, textvariable=self.port_var)
         self.port_dropdown.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 5))
-        self.update_ports()
-        
+        self.update_ports()        
         self.connect_button = ttk.Button(port_frame, text="Connect", command=self.connect_serial)
         self.connect_button.pack(side=tk.LEFT)
         
@@ -58,8 +54,6 @@ class ArduDAQ_UI:
         
         self.data_text = tk.Text(master, height=10, width=100)
         self.data_text.pack(pady=10)
-        
-        # Add time window selection frame
         time_window_frame = ttk.Frame(control_frame)
         time_window_frame.pack(side=tk.LEFT, padx=5)
         
@@ -72,15 +66,9 @@ class ArduDAQ_UI:
                                           state="readonly")
         time_window_dropdown.pack(side=tk.LEFT)
         ttk.Label(time_window_frame, text="s").pack(side=tk.LEFT)
-        
-        # Add timestamp tracking for each data point
         self.plot_timestamps = [np.array([]) for _ in range(4)]
-        
-        # Start periodic updates
         self.running = True
         self.master.after(50, self.process_events)
-        
-        # state variables
         self.continuous_mode = False
         
         # refresh ports button
@@ -88,14 +76,12 @@ class ArduDAQ_UI:
         self.refresh_button.pack(pady=5)
     
     def update_ports(self):
-        # update available ports
         ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_dropdown['values'] = ports
         if ports:
             self.port_dropdown.set(ports[0])
     
     def connect_serial(self):
-        # select serial port
         port = self.port_var.get()
         try:
             self.ser = serial.Serial(port, 115200, timeout=1)
@@ -110,7 +96,6 @@ class ArduDAQ_UI:
             tk.messagebox.showerror("Connection Error", f"Failed to connect to {port}: {str(e)}")
     
     def toggle_continuous(self):
-        # continuous mode toggle
         self.continuous_mode = not self.continuous_mode
         if self.continuous_mode:
             self.ser.write(b"START_CONTINUOUS\n")
@@ -120,7 +105,6 @@ class ArduDAQ_UI:
             self.start_stop_button.config(text="Start Continuous")
     
     def read_serial(self):
-        # continuous reading from serial
         while self.running:
             if self.ser.in_waiting:
                 line = self.ser.readline().decode('utf-8').strip()
@@ -130,7 +114,6 @@ class ArduDAQ_UI:
     
     def toggle_plot(self):
         if self.plot_widget is None:
-            # Create plot widget
             pg.setConfigOptions(antialias=True)
             self.plot_widget = pg.PlotWidget()
             self.plot_widget.setBackground('w')
@@ -138,8 +121,6 @@ class ArduDAQ_UI:
             self.plot_widget.setLabel('left', 'Voltage (V)')
             self.plot_widget.setLabel('bottom', 'Time (s)')
             self.plot_widget.setWindowTitle('Voltage Plot')
-            
-            # Set x-axis range to match the selected time window
             self.plot_widget.setXRange(0, float(self.time_window_var.get()))
             
             self.lines = [self.plot_widget.plot(pen=(i, 4), name=f'Channel {i+1}') for i in range(4)]
@@ -154,7 +135,7 @@ class ArduDAQ_UI:
     def process_data(self, data):
         channels = data.split(", ")
         display_data = []
-        current_time = time.time()  # Get current Unix timestamp
+        current_time = time.time()
         timestamp = time.strftime("[%H:%M:%S]")
         
         for i, channel in enumerate(channels):
@@ -180,22 +161,16 @@ class ArduDAQ_UI:
             self.data_text.see(tk.END)
     
     def process_events(self):
-        # Process Qt events
         self.qt_app.processEvents()
-        
-        # Update plot if it exists and is visible
         if self.plot_widget is not None:
             current_time = time.time()
             for i, line in enumerate(self.lines):
                 if self.channel_vars[i].get():
-                    # Calculate relative time in seconds from the start of the window
                     relative_times = self.plot_timestamps[i] - current_time + float(self.time_window_var.get())
                     line.setData(relative_times, self.plot_data[i])
                     line.show()
                 else:
                     line.hide()
-        
-        # Schedule next update if still running
         if self.running:
             self.master.after(50, self.process_events)
 
@@ -211,9 +186,12 @@ class ArduDAQ_UI:
         self.master.destroy()
 
 if __name__ == "__main__":
-    # Force X11 backend before creating any Qt objects
-    os.environ["QT_QPA_PLATFORM"] = "xcb"
-    os.environ["XDG_SESSION_TYPE"] = "x11"
+    # set Qt backend based on detected OS
+    if os.name == 'nt':  # Windows
+        os.environ["QT_QPA_PLATFORM"] = "windows"
+    else:  # penguin/Unix
+        os.environ["QT_QPA_PLATFORM"] = "xcb"
+        os.environ["XDG_SESSION_TYPE"] = "x11"
     
     root = tk.Tk()
     app = ArduDAQ_UI(root)
