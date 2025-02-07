@@ -22,7 +22,7 @@ It's a fun side project to get more familiar and pratice HW and SW before starti
 | Voltage Channels   | ✅ Tested        | Initial test seems good. |
 | Current Channel    | ✅ Tested        | Works relatively well but accuracy for super low currents not the best due to use of internal adc which is only 10bit.|
 | Onboard Temperature| ✅ Tested  | Initital test seems good.  |
-| IO | 🟡 Limited| Switching on 5/7 outputs. 2 dont work as IO due to them being Tx/Rx pins -> will be chnaged for V2 |
+| IO | 🚧  WIP| Switching on 5/7 outputs. 2 dont work as IO due to them being Tx/Rx pins -> will be chnaged for V2 |
 | Desktop APP | 🚧  WIP  | Works but needs optimizing. |
 
 Above tests were just the basic tests on the bench.

@@ -61,7 +61,7 @@ class ArduDAQ_UI:
         self.time_window_var = tk.StringVar(value="10")  # Default 10 seconds
         time_window_dropdown = ttk.Combobox(time_window_frame, 
                                           textvariable=self.time_window_var,
-                                          values=["10", "20", "30"],
+                                          values=["10", "20", "30", "60"],
                                           width=3,
                                           state="readonly")
         time_window_dropdown.pack(side=tk.LEFT)
