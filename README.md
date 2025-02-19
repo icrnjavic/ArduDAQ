@@ -9,7 +9,7 @@ It's a fun side project to get more familiar and pratice HW and SW before starti
 
 ## Features
 
-- Multiple voltage measurement channels (16 bit ADC)
+- Multiple voltage measurement channels (16 bit ADC @ 860SPS)
 - Current measurement channel (10 bit ADC - for now)
 - Onboard temperature sensing
 - IO (PWM included)
