@@ -30,6 +30,9 @@ bool continuousMode = false;
 unsigned long lastMeasurementTime = 0;
 const unsigned long measurementInterval = 10;
 
+#define SAMPLES_COUNT 64
+#define SAMPLE_DELAY 0
+
 // check if its a valid ads1115 channel(0-3)
 bool isValidChannel(int channel) {
   return (channel >= 0 && channel < 4);
@@ -65,6 +68,13 @@ void setup() {
 
   // calibrate acs712 offset
   calibrateACS712Offset();
+
+  ads.setGain(GAIN_ONE);    // ±4.096V
+  
+  // increase to maximum sample rate of 860 SPS (default is 128 SPS)
+  ads.setDataRate(RATE_ADS1115_860SPS);
+  
+  ads.begin();
 }
 
 void loop() {
