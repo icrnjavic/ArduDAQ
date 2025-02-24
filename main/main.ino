@@ -129,28 +129,27 @@ void processCommand(String command) {
     Serial.println("Continuous mode stopped");
   } else if (command.equals("MEAS:VOLT:CHAN1?")) {
     Serial.print("Channel 0 Voltage: ");
-    Serial.println(readChannelVoltage(0));
+    Serial.println(readChannelVoltage(0), 4);
   } else if (command.equals("MEAS:VOLT:CHAN2?")) {
     Serial.print("Channel 1 Voltage: ");
-    Serial.println(readChannelVoltage(1));
+    Serial.println(readChannelVoltage(1), 4);
   } else if (command.equals("MEAS:VOLT:CHAN3?")) {
     Serial.print("Channel 2 Voltage: ");
-    Serial.println(readChannelVoltage(2));
+    Serial.println(readChannelVoltage(2), 4);
   } else if (command.equals("MEAS:VOLT:CHAN4?")) {
     Serial.print("Channel 3 Voltage: ");
-    Serial.println(readChannelVoltage(3));
+    Serial.println(readChannelVoltage(3), 4);
   } else if (command.equals("MEAS:CURR?")) {
-    //Serial.print("Averaged Current (ACS712): ");
     float averagedCurrent = readCurrentAverage();
-    Serial.println(averagedCurrent);
+    Serial.println(averagedCurrent, 4);
   } else if (command.startsWith("READ_CHANNEL_")) {
-    int channel = command.charAt(13) - '0'; // Extract channel number
+    int channel = command.charAt(13) - '0';
     if (isValidChannel(channel)) {
       float voltage = readChannelVoltage(channel);
       Serial.print("Channel ");
       Serial.print(channel);
       Serial.print(": ");
-      Serial.print(voltage);
+      Serial.print(voltage, 4);
       Serial.println(" V");
     } else {
       Serial.println("Invalid channel");
@@ -169,7 +168,7 @@ void sendContinuousMeasurements() {
     response += "CH_";
     response += String(i);
     response += ": ";
-    response += String(readChannelVoltage(i));
+    response += String(readChannelVoltage(i), 4);
     response += "V, ";
   }
   response.trim();
