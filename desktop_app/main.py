@@ -19,23 +19,31 @@ class ArduDAQ_UI:
         self.ser = None
         self.plot_widget = None
         self.plot_data = [np.array([]) for _ in range(4)]
+        self.plot_timestamps = [np.array([]) for _ in range(4)]
         self.lines = []
-        
+        self.running = True
+        self.continuous_mode = False
+
+        # UI Layout
         port_frame = ttk.Frame(master)
         port_frame.pack(pady=5, fill=tk.X)
-        
+
         self.port_label = ttk.Label(port_frame, text="Select Port:")
         self.port_label.pack(side=tk.LEFT, padx=(0, 5))        
         self.port_var = tk.StringVar()
         self.port_dropdown = ttk.Combobox(port_frame, textvariable=self.port_var)
         self.port_dropdown.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 5))
-        self.update_ports()        
-        self.connect_button = ttk.Button(port_frame, text="Connect", command=self.connect_serial)
-        self.connect_button.pack(side=tk.LEFT)
+        self.update_ports()
         
+        self.connect_button = ttk.Button(port_frame, text="Connect", command=self.connect_serial)
+        self.connect_button.pack(side=tk.LEFT, padx=5)
+        
+        self.disconnect_button = ttk.Button(port_frame, text="Disconnect", command=self.disconnect_serial, state="disabled")
+        self.disconnect_button.pack(side=tk.LEFT, padx=5)
+
         control_frame = ttk.Frame(master)
         control_frame.pack(pady=5, fill=tk.X)
-        
+
         self.channel_vars = []
         self.channel_checkboxes = []
         for i in range(4):
@@ -44,74 +52,88 @@ class ArduDAQ_UI:
             cb.pack(side=tk.LEFT, padx=5)
             self.channel_vars.append(var)
             self.channel_checkboxes.append(cb)
-        
+
         self.start_stop_button = ttk.Button(control_frame, text="Start Continuous", command=self.toggle_continuous, state="disabled")
-        self.start_stop_button.pack(side=tk.LEFT, padx=5)        
-        
-        # Add plot control button
+        self.start_stop_button.pack(side=tk.LEFT, padx=5)
+
         self.plot_button = ttk.Button(control_frame, text="Show Plot", command=self.toggle_plot)
         self.plot_button.pack(side=tk.LEFT, padx=5)
-        
+
         self.data_text = tk.Text(master, height=10, width=100)
         self.data_text.pack(pady=10)
-        time_window_frame = ttk.Frame(control_frame)
-        time_window_frame.pack(side=tk.LEFT, padx=5)
-        
-        ttk.Label(time_window_frame, text="Time Window:").pack(side=tk.LEFT)
-        self.time_window_var = tk.StringVar(value="10")  # Default 10 seconds
-        time_window_dropdown = ttk.Combobox(time_window_frame, 
-                                          textvariable=self.time_window_var,
-                                          values=["10", "20", "30", "60"],
-                                          width=3,
-                                          state="readonly")
-        time_window_dropdown.pack(side=tk.LEFT)
-        ttk.Label(time_window_frame, text="s").pack(side=tk.LEFT)
-        self.plot_timestamps = [np.array([]) for _ in range(4)]
-        self.running = True
+
+        self.refresh_ports_button = ttk.Button(master, text="Refresh Ports", command=self.update_ports)
+        self.refresh_ports_button.pack(pady=5)
+
         self.master.after(50, self.process_events)
-        self.continuous_mode = False
-        
-        # refresh ports button
-        self.refresh_button = ttk.Button(master, text="Refresh Ports", command=self.update_ports)
-        self.refresh_button.pack(pady=5)
-    
+
     def update_ports(self):
         ports = [port.device for port in serial.tools.list_ports.comports()]
         self.port_dropdown['values'] = ports
         if ports:
             self.port_dropdown.set(ports[0])
-    
+
     def connect_serial(self):
         port = self.port_var.get()
         try:
             self.ser = serial.Serial(port, 115200, timeout=1)
-            time.sleep(2)  # allow time for serial connection to establish
+            time.sleep(2)
             self.start_stop_button['state'] = "normal"
             self.connect_button['state'] = "disabled"
+            self.disconnect_button['state'] = "normal"
             self.port_dropdown['state'] = "disabled"
             self.running = True
             self.read_thread = threading.Thread(target=self.read_serial)
             self.read_thread.start()
         except serial.SerialException as e:
             tk.messagebox.showerror("Connection Error", f"Failed to connect to {port}: {str(e)}")
-    
+
+    def disconnect_serial(self):
+        if self.ser:
+            if self.continuous_mode:
+                self.ser.write(b"STOP_CONTINUOUS\n")
+                self.continuous_mode = False
+            self.ser.close()
+            self.ser = None
+
+        self.connect_button['state'] = "normal"
+        self.disconnect_button['state'] = "disabled"
+        self.start_stop_button['state'] = "disabled"
+        self.port_dropdown['state'] = "normal"
+
     def toggle_continuous(self):
+        if not self.ser:
+            return
+
         self.continuous_mode = not self.continuous_mode
         if self.continuous_mode:
+            self.ser.reset_input_buffer()
             self.ser.write(b"START_CONTINUOUS\n")
             self.start_stop_button.config(text="Stop Continuous")
         else:
             self.ser.write(b"STOP_CONTINUOUS\n")
             self.start_stop_button.config(text="Start Continuous")
-    
+
     def read_serial(self):
+        buffer = ""
         while self.running:
-            if self.ser.in_waiting:
-                line = self.ser.readline().decode('utf-8').strip()
-                if line:
-                    self.process_data(line)
-            time.sleep(0.1)
-    
+            if self.ser is None:
+                break
+            
+            try:
+                if self.ser.in_waiting:
+                    data = self.ser.read(self.ser.in_waiting).decode('utf-8', errors='ignore')
+                    if data:
+                        buffer += data
+                        while "\n" in buffer:
+                            line, buffer = buffer.split("\n", 1)
+                            self.process_data(line.strip())
+            except serial.SerialException:
+                break
+            except AttributeError:
+                break
+
+
     def toggle_plot(self):
         if self.plot_widget is None:
             pg.setConfigOptions(antialias=True)
@@ -121,7 +143,6 @@ class ArduDAQ_UI:
             self.plot_widget.setLabel('left', 'Voltage (V)')
             self.plot_widget.setLabel('bottom', 'Time (s)')
             self.plot_widget.setWindowTitle('Voltage Plot')
-            self.plot_widget.setXRange(0, float(self.time_window_var.get()))
             
             self.lines = [self.plot_widget.plot(pen=(i, 4), name=f'Channel {i+1}') for i in range(4)]
             self.plot_widget.show()
@@ -131,69 +152,72 @@ class ArduDAQ_UI:
             self.plot_widget = None
             self.lines = []
             self.plot_button.config(text="Show Plot")
-    
+
     def process_data(self, data):
+        #print(f"Processing: {data}")
+        
         channels = data.split(", ")
         display_data = []
         current_time = time.time()
         timestamp = time.strftime("[%H:%M:%S]")
-        
-        for i, channel in enumerate(channels):
-            if i < len(self.channel_vars) and self.channel_vars[i].get():
-                display_data.append(channel)
-                try:
-                    voltage = float(channel.split(": ")[1].replace("V", "").strip(','))
-                    self.plot_data[i] = np.append(self.plot_data[i], voltage)
-                    self.plot_timestamps[i] = np.append(self.plot_timestamps[i], current_time)
-                    
-                    # Keep only data within the selected time window
-                    time_window = float(self.time_window_var.get())
-                    mask = self.plot_timestamps[i] >= (current_time - time_window)
-                    self.plot_data[i] = self.plot_data[i][mask]
-                    self.plot_timestamps[i] = self.plot_timestamps[i][mask]
-                    
-                except (IndexError, ValueError) as e:
-                    print(f"Error processing channel {i}: {e}")
-                    print(f"Raw data: {channel}")
-        
+
+        for ch in channels:
+            try:
+                parts = ch.split(": ")
+                if len(parts) != 2:
+                    continue
+                ch_name, value = parts
+                ch_index = int(ch_name.replace("CH_", "").strip())
+                voltage = float(value.replace("V", "").replace(",", "").strip())
+
+                if 0 <= ch_index < len(self.plot_data):
+                    self.plot_data[ch_index] = np.append(self.plot_data[ch_index], voltage)
+                    self.plot_timestamps[ch_index] = np.append(self.plot_timestamps[ch_index], current_time)
+
+                    if self.channel_vars[ch_index].get():
+                        display_data.append(f"CH_{ch_index}: {voltage:.4f}V")
+
+            except Exception as e:
+                print(f"=================>Error processing data: {ch} | {e}")
+
         if display_data:
             self.data_text.insert(tk.END, f"{timestamp} " + " | ".join(display_data) + "\n")
             self.data_text.see(tk.END)
-    
+
     def process_events(self):
         self.qt_app.processEvents()
+
         if self.plot_widget is not None:
-            current_time = time.time()
             for i, line in enumerate(self.lines):
                 if self.channel_vars[i].get():
-                    relative_times = self.plot_timestamps[i] - current_time + float(self.time_window_var.get())
-                    line.setData(relative_times, self.plot_data[i])
-                    line.show()
+                    try:
+                        min_length = min(len(self.plot_timestamps[i]), len(self.plot_data[i]))
+                        self.plot_timestamps[i] = self.plot_timestamps[i][-min_length:]
+                        self.plot_data[i] = self.plot_data[i][-min_length:]
+
+                        if min_length > 0:
+                            relative_times = self.plot_timestamps[i] - self.plot_timestamps[i][0]
+                            line.setData(relative_times, self.plot_data[i])
+                            line.show()
+                        else:
+                            line.setData([], [])
+                    except Exception as e:
+                        print(f"=================>Error updating CH_{i}: {e}")
                 else:
                     line.hide()
-        if self.running:
-            self.master.after(50, self.process_events)
 
-    def on_closing(self):
-        self.running = False
-        if self.ser:
-            if self.continuous_mode:
-                self.ser.write(b"STOP_CONTINUOUS\n")
-            self.ser.close()
-        if self.plot_widget is not None:
-            self.plot_widget.close()
-        self.qt_app.quit()
-        self.master.destroy()
+        self.master.update_idletasks()
+
+        if self.running:
+            self.master.after(5, self.process_events)
+
+
+
+def on_closing():
+    root.destroy()
 
 if __name__ == "__main__":
-    # set Qt backend based on detected OS
-    if os.name == 'nt':  # Windows
-        os.environ["QT_QPA_PLATFORM"] = "windows"
-    else:  # penguin/Unix
-        os.environ["QT_QPA_PLATFORM"] = "xcb"
-        os.environ["XDG_SESSION_TYPE"] = "x11"
-    
     root = tk.Tk()
     app = ArduDAQ_UI(root)
-    root.protocol("WM_DELETE_WINDOW", app.on_closing)
+    root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
