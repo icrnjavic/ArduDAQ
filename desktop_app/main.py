@@ -90,9 +90,14 @@ class ArduDAQ_UI:
 
     def disconnect_serial(self):
         if self.ser:
+            self.running = False
             if self.continuous_mode:
                 self.ser.write(b"STOP_CONTINUOUS\n")
                 self.continuous_mode = False
+            
+            if hasattr(self, 'read_thread') and self.read_thread.is_alive():
+                self.read_thread.join()
+            
             self.ser.close()
             self.ser = None
 
@@ -214,6 +219,8 @@ class ArduDAQ_UI:
 
 
 def on_closing():
+    if app.ser:
+        app.disconnect_serial()
     root.destroy()
 
 if __name__ == "__main__":
