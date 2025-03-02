@@ -4,7 +4,7 @@
 
 ## Project Description
 
-ArduDAQ is an open-source data acquisition shield for the popular Arduino platform with design to measure voltage, current, and onboard temperature with access to the rest of the pins from the base board. <br>
+***ArduDAQ*** is an open-source data acquisition shield for the popular Arduino platform with design to measure voltage, current, and onboard temperature with access to the rest of the pins from the base board. <br>
 It's a fun side project to get more familiar and pratice HW and SW before starting a stand alone board. Component selection is somewhat sub optimal as i wanted to use components i had on hand.
 
 ## Features
@@ -23,7 +23,7 @@ It's a fun side project to get more familiar and pratice HW and SW before starti
 | Current Channel    | ✅ Tested        | Works relatively well but accuracy for super low currents not the best due to use of internal adc which is only 10bit.|
 | Onboard Temperature| ✅ Tested  | Initital test seems good.  |
 | IO | 🚧  WIP| Switching on 5/7 outputs. 2 dont work as IO due to them being Tx/Rx pins -> will be chnaged for V2 |
-| Desktop APP | 🚧  WIP  | Works but needs optimizing. |
+| Desktop APP | ✅ Tested  | Latency issues fixed. |
 
 Above tests were just the basic tests on the bench.
 More detailed testing will be done after the test jig is finished.
@@ -34,9 +34,11 @@ As seen above on the cannel i was testing the accuracy was pretty good, with a m
 
 
 ## Dekstop App
-Alongside ArduDAQ shield's support for serial commands for automated measurements it also has a desktop app(***still WIP***).<br>
-It will be able to put the ArduDAQ in continuous mode to display measured voltages on selected voltage channels over time and plot those measurements.
+Alongside ArduDAQ shield's support for serial commands for automated measurements it also has a desktop app.<br>
+It will be able to put the ArduDAQ in continuous mode to display measured voltages on selected voltage channels over time and plot those measurements.</br>
 ![Alt text](docs/pictures/new_gui.png)
+</br>Watch a short demo of the app:</br>
+[![Watch here](https://img.youtube.com/vi/IrxwRATrHMw/0.jpg)](https://www.youtube.com/watch?v=IrxwRATrHMw)
 
 
 ## Getting Started
@@ -73,7 +75,7 @@ It will be able to put the ArduDAQ in continuous mode to display measured voltag
 
 ### Example Usage
 
-To read the voltage on Channel 1, send the command `MEAS:VOLT:CHAN1?` over serial. Board will respond with a message like: `3.30V`
+To read the voltage on Channel 1, send the command `MEAS:VOLT:CHAN1?` over serial. Board will respond with a message like: `3.3001V`
 
 
 
