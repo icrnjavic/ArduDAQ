@@ -30,6 +30,9 @@ bool continuousMode = false;
 unsigned long lastMeasurementTime = 0;
 const unsigned long measurementInterval = 10;
 
+#define SAMPLES_COUNT 64
+#define SAMPLE_DELAY 0
+
 // check if its a valid ads1115 channel(0-3)
 bool isValidChannel(int channel) {
   return (channel >= 0 && channel < 4);
@@ -65,6 +68,13 @@ void setup() {
 
   // calibrate acs712 offset
   calibrateACS712Offset();
+
+  ads.setGain(GAIN_ONE);    // ±4.096V
+  
+  // increase to maximum sample rate of 860 SPS (default is 128 SPS)
+  ads.setDataRate(RATE_ADS1115_860SPS);
+  
+  ads.begin();
 }
 
 void loop() {
@@ -80,15 +90,19 @@ void loop() {
 }
 
 void processCommand(String command) {
-  if (command.startsWith("SET_")) {
-    int pin = command.charAt(4) - '0'; // extract the pin number    
+  if (command.startsWith("OUTP")) {
+    String pinStr = command.substring(9, 11); // Extract from index 9 to 11
+    int pin = pinStr.toInt(); // Convert to integer
+    Serial.println(command);
+    Serial.println(pin);
+
     if (isValidPin(pin)) {
-      if (command.endsWith("_ON")) {
+      if (command.endsWith("ON")) {
         digitalWrite(pin, HIGH); // set extracted pin to HIGH
         Serial.print("Pin D");
         Serial.print(pin);
         Serial.println(" set to HIGH");
-      } else if (command.endsWith("_OFF")) {
+      } else if (command.endsWith("OFF")) {
         digitalWrite(pin, LOW); // set the extracted pin to LOW
         Serial.print("Pin D");
         Serial.print(pin);
@@ -113,35 +127,34 @@ void processCommand(String command) {
   } else if (command.equals("STOP_CONTINUOUS")) {
     continuousMode = false;
     Serial.println("Continuous mode stopped");
-  } else if (command.equals("READ_CHANNEL_1")) {
+  } else if (command.equals("MEAS:VOLT:CHAN1?")) {
     Serial.print("Channel 0 Voltage: ");
-    Serial.println(readChannelVoltage(0));
-  } else if (command.equals("READ_CHANNEL_2")) {
+    Serial.println(readChannelVoltage(0), 4);
+  } else if (command.equals("MEAS:VOLT:CHAN2?")) {
     Serial.print("Channel 1 Voltage: ");
-    Serial.println(readChannelVoltage(1));
-  } else if (command.equals("READ_CHANNEL_3")) {
+    Serial.println(readChannelVoltage(1), 4);
+  } else if (command.equals("MEAS:VOLT:CHAN3?")) {
     Serial.print("Channel 2 Voltage: ");
-    Serial.println(readChannelVoltage(2));
-  } else if (command.equals("READ_CHANNEL_4")) {
+    Serial.println(readChannelVoltage(2), 4);
+  } else if (command.equals("MEAS:VOLT:CHAN4?")) {
     Serial.print("Channel 3 Voltage: ");
-    Serial.println(readChannelVoltage(3));
-  } else if (command.equals("READ_CURRENT")) {
-    Serial.print("Averaged Current (ACS712): ");
+    Serial.println(readChannelVoltage(3), 4);
+  } else if (command.equals("MEAS:CURR?")) {
     float averagedCurrent = readCurrentAverage();
-    Serial.println(averagedCurrent);
+    Serial.println(averagedCurrent, 4);
   } else if (command.startsWith("READ_CHANNEL_")) {
-    int channel = command.charAt(13) - '0'; // Extract channel number
+    int channel = command.charAt(13) - '0';
     if (isValidChannel(channel)) {
       float voltage = readChannelVoltage(channel);
       Serial.print("Channel ");
       Serial.print(channel);
       Serial.print(": ");
-      Serial.print(voltage);
+      Serial.print(voltage, 4);
       Serial.println(" V");
     } else {
       Serial.println("Invalid channel");
     }
-  } else if (command.equals("READ_TEMPERATURE")) {
+  } else if (command.equals("MEAS:TEMP?")) {
     float temperature = readTemperature();
     Serial.print("Temperature: ");
     Serial.print(temperature);
@@ -150,14 +163,16 @@ void processCommand(String command) {
 }
 
 void sendContinuousMeasurements() {
+  String response = "";
   for (int i = 0; i < 4; i++) {
-    Serial.print("CH_");
-    Serial.print(i);
-    Serial.print(": ");
-    Serial.print(readChannelVoltage(i));
-    Serial.print("V, ");
+    response += "CH_";
+    response += String(i);
+    response += ": ";
+    response += String(readChannelVoltage(i), 4);
+    response += "V, ";
   }
-  Serial.println();
+  response.trim();
+  Serial.println(response);
 }
 
 // ads1115 measurement of individual channels
