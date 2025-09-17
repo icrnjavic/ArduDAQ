@@ -37,6 +37,10 @@ As seen above on the cannel i was testing the accuracy was pretty good, with a m
 Alongside ArduDAQ shield's support for serial commands for automated measurements it also has a desktop app.<br>
 It will be able to put the ArduDAQ in continuous mode to display measured voltages on selected voltage channels over time and plot those measurements.</br>
 ![Alt text](docs/pictures/new_gui.png)
+</br>
+<br>
+Real world example:
+![Alt text](docs/pictures/real-world-example.png)</br>
 </br>Watch a short demo of the app:</br>
 [![Watch here](https://img.youtube.com/vi/IrxwRATrHMw/0.jpg)](https://www.youtube.com/watch?v=IrxwRATrHMw)
 
