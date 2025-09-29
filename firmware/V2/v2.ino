@@ -257,14 +257,14 @@ void processCommand(String command) {
 
 void sendContinuousMeasurements() {
   String response = "";
-  for (int i = 0; i < 8; i++) {
-    if (i) response += ", ";
+  for (int i = 0; i < 4; i++) {
     response += "CH_";
-    response += i;
-    response += "=";
+    response += String(i);
+    response += ": ";
     response += String(readChannelVoltage(i), 4);
-    response += "V";
+    response += "V, ";
   }
+  response.trim();
   Serial.println(response);
 }
 
