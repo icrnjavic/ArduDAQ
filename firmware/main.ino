@@ -1,7 +1,11 @@
 //
 // https://github.com/icrnjavic/ArduDAQ
 // Arduino shield for data aquisiton of voltage, current and temperature measurements with available IO from teh ebase board.
+// Version 2.0 - Dual ADS1115 support and an extra current measurement input via shunt (8 channels total; 2 inputs will be used for current measurement via shunt)
 //
+
+// fw version
+const String FIRMWARE_VERSION = "2.0";
 
 
 
@@ -10,11 +14,12 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-Adafruit_ADS1115 ads;
+Adafruit_ADS1115 ads1;  // first ADS1115 (addr pulled to ground = 0x48)
+Adafruit_ADS1115 ads2;  // second ADS1115 (addr pulled to VCC = 0x49)
 
-// array of voltage resistor values for individual channels 1-4 from left to right
-float R1[4] = {10000.0, 10000.0, 10000.0, 10000.0};
-float R2[4] = {1000.0, 1000.0, 1000.0, 1000.0};
+// array of voltage resistor values for individual channels 1-8 from left to right
+float R1[8] = {10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0};
+float R2[8] = {1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0};
 
 // ds18b20 Temperature Sensor Setup
 #define ONE_WIRE_BUS 2  // DS18B20 to pin D2
@@ -33,15 +38,19 @@ const unsigned long measurementInterval = 10;
 #define SAMPLES_COUNT 64
 #define SAMPLE_DELAY 0
 
-// check if its a valid ads1115 channel(0-3)
+// check if its a valid ads1115 channel(0-7)
 bool isValidChannel(int channel) {
-  return (channel >= 0 && channel < 4);
+  return (channel >= 0 && channel < 8);
 }
 
 void setup() {
   Serial.begin(115200);
-  if (!ads.begin()) {
-    Serial.println("Failed to initialize ADS1115!");
+  if (!ads1.begin(0x48)) {
+    Serial.println("Failed to initialize ADS1115 #1!");
+    while (1);
+  }
+  if (!ads2.begin(0x49)) {
+    Serial.println("Failed to initialize ADS1115 #2!");
     while (1);
   }
   //Serial.println("ADS1115 initialized.");
@@ -69,12 +78,12 @@ void setup() {
   // calibrate acs712 offset
   calibrateACS712Offset();
 
-  ads.setGain(GAIN_ONE);    // ±4.096V
+  ads1.setGain(GAIN_ONE);    // ±4.096V
+  ads2.setGain(GAIN_ONE);    // ±4.096V
   
   // increase to maximum sample rate of 860 SPS (default is 128 SPS)
-  ads.setDataRate(RATE_ADS1115_860SPS);
-  
-  ads.begin();
+  ads1.setDataRate(RATE_ADS1115_860SPS);
+  ads2.setDataRate(RATE_ADS1115_860SPS);
 }
 
 void loop() {
@@ -116,11 +125,15 @@ void processCommand(String command) {
   } else if (command.equals("info")) {
     Serial.println("SET_<pin_number>_ON - Sets the specified pin to HIGH.");
     Serial.println("SET_<pin_number>_OFF - Sets the specified pin to LOW.");
-    Serial.println("READ_CHANNEL_<channel_number> - Reads the voltage of the specified channel(1-4).");
+    Serial.println("READ_CHANNEL_<channel_number> - Reads the voltage of the specified channel(1-8).");
     Serial.println("READ_TEMPERATURE - Reads the temperature from the onboard sensor.");
     Serial.println("START_CONTINUOUS - Starts continuous measurements.");
     Serial.println("STOP_CONTINUOUS - Stops continuous measurements.");
     Serial.println("READ_CURRENT - Reads the current from the single channel.");
+    Serial.println("VERSION - Returns the firmware version.");
+  } else if (command.equals("VERSION")) {
+    Serial.print("Firmware Version: ");
+    Serial.println(FIRMWARE_VERSION);
   } else if (command.equals("START_CONTINUOUS")) {
     continuousMode = true;
     Serial.println("Continuous mode started");
@@ -139,6 +152,18 @@ void processCommand(String command) {
   } else if (command.equals("MEAS:VOLT:CHAN4?")) {
     Serial.print("Channel 3 Voltage: ");
     Serial.println(readChannelVoltage(3), 4);
+  } else if (command.equals("MEAS:VOLT:CHAN5?")) {
+    Serial.print("Channel 4 Voltage: ");
+    Serial.println(readChannelVoltage(4), 4);
+  } else if (command.equals("MEAS:VOLT:CHAN6?")) {
+    Serial.print("Channel 5 Voltage: ");
+    Serial.println(readChannelVoltage(5), 4);
+  } else if (command.equals("MEAS:VOLT:CHAN7?")) {
+    Serial.print("Channel 6 Voltage: ");
+    Serial.println(readChannelVoltage(6), 4);
+  } else if (command.equals("MEAS:VOLT:CHAN8?")) {
+    Serial.print("Channel 7 Voltage: ");
+    Serial.println(readChannelVoltage(7), 4);
   } else if (command.equals("MEAS:CURR?")) {
     float averagedCurrent = readCurrentAverage();
     Serial.println(averagedCurrent, 4);
@@ -164,7 +189,7 @@ void processCommand(String command) {
 
 void sendContinuousMeasurements() {
   String response = "";
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 8; i++) {
     response += "CH_";
     response += String(i);
     response += ": ";
@@ -179,15 +204,26 @@ void sendContinuousMeasurements() {
 float readChannelVoltage(int channel) {
   int16_t adcReading;
   float Vout, inputVoltage;
+  Adafruit_ADS1115* ads;
+  int adsChannel;
 
-  ads.setGain(GAIN_TWOTHIRDS);
-  adcReading = ads.readADC_SingleEnded(channel);
+  // Select which ADS1115 to use based on channel
+  if (channel < 4) {
+    ads = &ads1;  // Channels 0-3 use first ADS1115
+    adsChannel = channel;
+  } else {
+    ads = &ads2;  // Channels 4-7 use second ADS1115
+    adsChannel = channel - 4; // Adjust channel number for second ADS1115 (0-3)
+  }
+
+  ads->setGain(GAIN_TWOTHIRDS);
+  adcReading = ads->readADC_SingleEnded(adsChannel);
   Vout = (adcReading * 6.144) / 32767.0;
   inputVoltage = Vout * ((R1[channel] + R2[channel]) / R2[channel]);
 
   if (inputVoltage < 4.0) {
-    ads.setGain(GAIN_ONE);
-    adcReading = ads.readADC_SingleEnded(channel);
+    ads->setGain(GAIN_ONE);
+    adcReading = ads->readADC_SingleEnded(adsChannel);
     Vout = (adcReading * 4.096) / 32767.0;
     inputVoltage = Vout * ((R1[channel] + R2[channel]) / R2[channel]);
   }
@@ -211,7 +247,7 @@ float readCurrentAverage() {
 // read current from acs712 via A3 pin
 float readCurrent() {
   int16_t currentAdcReading = analogRead(A3); 
-  float currentVout = (currentAdcReading * 5.0) / 1023.0;  // TO DO: for V2 use a second ads1115 instead of internal adc for better resolution
+  float currentVout = (currentAdcReading * 5.0) / 1023.0;  // acs712 still on the internal adc
   return (currentVout - ACS712_Offset) / ACS712_Sensitivity;
 }
 

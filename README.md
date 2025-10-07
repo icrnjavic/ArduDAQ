@@ -1,36 +1,41 @@
 # ArduDAQ
 
-![Alt text](docs/pictures/1.png)
 
-## Project Description
-
-***ArduDAQ*** is an open-source data acquisition shield for the popular Arduino platform with design to measure voltage, current, and onboard temperature with access to the rest of the pins from the base board. <br>
-It's a fun side project to get more familiar and pratice HW and SW before starting a stand alone board. Component selection is somewhat sub optimal as i wanted to use components i had on hand.
-
-## Features
-
-- Multiple voltage measurement channels (16 bit ADC @ 860SPS)
-- Current measurement channel (10 bit ADC - for now)
-- Onboard temperature sensing
-- IO (PWM included)
+<p float="left">
+  <img src="docs/pictures/1.png" width="48%"/>
+  <img src="docs/pictures/bareV2.png" width="48%"/>
+</p>
 
 
-## Testing
 
-| Function         | Status          | Comments            |
-|--------------------|-----------------|---------------------|
-| Voltage Channels   | ✅ Tested        | Initial test seems good. |
-| Current Channel    | ✅ Tested        | Works relatively well but accuracy for super low currents not the best due to use of internal adc which is only 10bit.|
-| Onboard Temperature| ✅ Tested  | Initital test seems good.  |
-| IO | 🚧  WIP| Switching on 5/7 outputs. 2 dont work as IO due to them being Tx/Rx pins -> will be chnaged for V2 |
-| Desktop APP | ✅ Tested  | Latency issues fixed. |
+***ArduDAQ*** is an open-source data acquisition shield for the popular Arduino platform with design to measure voltage, current, and onboard temperature with access to the rest of the pins from the base board for IO control. <br>
+Now also comes with a stackable partner board that can turn the ArduDAQ into a bench multimeter for a more "plug and play" use directly with test probes and the companion Desktop App.  <br>
+<p float="left">
+  <img src="docs/pictures/desktop_bare_stack.png" width="48%"/>
+  <img src="docs/pictures/desktop-board.png" width="48%"/>
+</p>
 
-Above tests were just the basic tests on the bench.
-More detailed testing will be done after the test jig is finished.
+## Sponsor
+<img src="docs/pictures/logo.png" alt="PCBWay" width="150"/>  
+has graciously sponsored the V2 and Desktop Carrier Board.  
 
-Too test the Voltage channel accuracy i teste accuracy so that I measured voltage on the PSU where i was incrementing the ouptu by 0.5V. For a reference point i was also measuring the output with a OWON XD1041 multimeter.
-![Alt text](docs/pictures/accuracy_test.png)
-As seen above on the cannel i was testing the accuracy was pretty good, with a max deviation of 8mV @ 50V compared to the multimeter.
+The hardware for this project is open source, and you can easily order the PCBs directly from PCBWay through the link below—without the hassle of dealing with Gerber files.  
+
+I highly recommend their services. I’ve been using PCBWay for a long time, and they have always delivered high-quality products and excellent support.
+
+
+## Specifications
+
+| Spec            | info                                                  |
+|-----------------|-------------------------------------------------------|
+| Up to 8 AIN pins| By default has 6 analog inputs but can be configured up to 8.<br>16bit @ 860SPS.   |
+| Up to 2 current channels| Hall effect based channel up to(not recommended) 5A via internal 10bit ADC.<br>Shunt channel configurable with 16bit @ 860SPS.   |
+| 7 outputs| 7 digital outputs; 4 of which are PWM pins. |
+| Onboard temp.| ds18b20 offers great accuracy and is often included in arduino kits so it was chosen over the NTC route|
+
+
+
+
 
 
 ## Dekstop App
@@ -38,49 +43,29 @@ Alongside ArduDAQ shield's support for serial commands for automated measurement
 It will be able to put the ArduDAQ in continuous mode to display measured voltages on selected voltage channels over time and plot those measurements.</br>
 ![Alt text](docs/pictures/new_gui.png)
 </br>
-<br>
-Real world example:
-![Alt text](docs/pictures/real-world-example.png)</br>
+
 </br>Watch a short demo of the app:</br>
 [![Watch here](https://img.youtube.com/vi/IrxwRATrHMw/0.jpg)](https://www.youtube.com/watch?v=IrxwRATrHMw)
 
 
-## Getting Started
+## Versions/releases
 
-### Serial Communication
-- **Baud Rate**: 115200
-- **Data Bits**: 8
-- **Parity**: None
-- **Stop Bits**: 1
-- **Flow Control**: None
+| Version   | HW/FW/SW   | Comments                         |
+|-----------|---------|----------------------------------|
+| Desktop v1| HW      | Carrier board that turrns the ArduDAQ into a more plug and play dekstop multimeter when paired with the Desktop app. Compatible with both V1 and V2 HW.|
+| v2        | HW&FW   | V2 features up to 4 more 16bit input, additional current input with better low current accuracy.|
+| v1        | HW      | HW fixes for IO pins             |
+| Desktop app v1| SW  | PC app for reading-plotting data in real time.|
+| v0.1      | HW&FW   | Initial release of ArduDAQ        |
+<br>
 
-### Supported commands
-| Command           | Description                           | Response Format    |
-|-------------------|---------------------------------------|--------------------|
-| `*IDN?`          | Request device identification         | Device identifier  |
-| `MEAS:VOLT:CHAN1?`| Read voltage from channel 1          | `<value>` in V     |
-| `MEAS:VOLT:CHAN2?`| Read voltage from channel 2          | `<value>` in V     |
-| `MEAS:VOLT:CHAN3?`| Read voltage from channel 3          | `<value>` in V     |
-| `MEAS:VOLT:CHAN4?`| Read voltage from channel 4          | `<value>` in V     |
-| `MEAS:CURR?`      | Read current measurement             | `<value>` in A     |
-| `MEAS:TEMP?`      | Read temperature measurement         | `<value>` in °C|
-| `OUTP:CHAN3 ON`   | Turn on channel 3 output             | Channel 3 ON       |
-| `OUTP:CHAN3 OFF`  | Turn off channel 3 output            | Channel 3 OFF      |
-| `OUTP:CHAN4 ON`   | Turn on channel 4 output             | Channel 4 ON       |
-| `OUTP:CHAN4 OFF`  | Turn off channel 4 output            | Channel 4 OFF      |
-| `OUTP:CHAN5 ON`   | Turn on channel 5 output             | Channel 5 ON       |
-| `OUTP:CHAN5 OFF`  | Turn off channel 5 output            | Channel 5 OFF      |
-| `OUTP:CHAN6 ON`   | Turn on channel 6 output             | Channel 6 ON       |
-| `OUTP:CHAN6 OFF`  | Turn off channel 6 output            | Channel 6 OFF      |
-| `OUTP:CHAN7 ON`   | Turn on channel 7 output             | Channel 7 ON       |
-| `OUTP:CHAN7 OFF`  | Turn off channel 7 output            | Channel 7 OFF      |
-
-
-
-### Example Usage
-
-To read the voltage on Channel 1, send the command `MEAS:VOLT:CHAN1?` over serial. Board will respond with a message like: `3.3001V`
+![Alt text](docs/pictures/versions_text.png)
 
 
 
 
+
+
+
+## Usage & docs
+For usage with examples and more details read the [documentation](docs/usage_documentation.md).
