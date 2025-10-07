@@ -19,7 +19,8 @@ Now also comes with a stackable partner board that can turn the ArduDAQ into a b
 <img src="docs/pictures/logo.png" alt="PCBWay" width="150"/>  
 has graciously sponsored the V2 and Desktop Carrier Board.  
 
-The hardware for this project is open source, and you can easily order the PCBs directly from PCBWay through the link below—without the hassle of dealing with Gerber files.  
+The hardware for this project is open source, and you can easily order the PCBs directly from PCBWay through the following [link](https://www.pcbway.com/project/shareproject/ArduDAQ_V2_Arduino_Data_acquisition_shield_hat_7666eddc.html)
+ the hassle of dealing with Gerber files.  
 
 I highly recommend their services. I’ve been using PCBWay for a long time, and they have always delivered high-quality products and excellent support.
 
