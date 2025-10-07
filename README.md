@@ -29,9 +29,9 @@ I highly recommend their services. I’ve been using PCBWay for a long time, and
 | Spec            | info                                                  |
 |-----------------|-------------------------------------------------------|
 | Up to 8 AIN pins| By default has 6 analog inputs but can be configured up to 8.<br>16bit @ 860SPS.   |
-| Up to 2 current channels| Hall effect based channel up to(not recommended) 5A via internal 10bit ADC<br>Shunt channel configurable with 16bit @ 860SPS.   |
+| Up to 2 current channels| Hall effect based channel up to(not recommended) 5A via internal 10bit ADC.<br>Shunt channel configurable with 16bit @ 860SPS.   |
 | 7 outputs| 7 digital outputs; 4 of which are PWM pins. |
-| Temperature pin| ds18b20 offers great accuracy and is often included in arduino kits so it was chosen over the NTC route|
+| Onboard temp.| ds18b20 offers great accuracy and is often included in arduino kits so it was chosen over the NTC route|
 
 
 
@@ -48,7 +48,7 @@ It will be able to put the ArduDAQ in continuous mode to display measured voltag
 [![Watch here](https://img.youtube.com/vi/IrxwRATrHMw/0.jpg)](https://www.youtube.com/watch?v=IrxwRATrHMw)
 
 
-## Versions releases
+## Versions/releases
 
 | Version   | HW/FW/SW   | Comments                         |
 |-----------|---------|----------------------------------|
